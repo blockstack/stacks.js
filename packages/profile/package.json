@@ -46,7 +46,7 @@
     "@stacks/network": "^1.2.2",
     "bitcoinjs-lib": "^5.1.10",
     "jsontokens": "^3.0.0",
-    "schema-inspector": "^1.7.0",
+    "schema-inspector": "^2.0.0",
     "zone-file": "^1.0.0"
   },
   "devDependencies": {
