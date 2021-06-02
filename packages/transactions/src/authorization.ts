@@ -34,7 +34,12 @@ import {
 
 import BigNum from 'bn.js';
 import { BufferReader } from './bufferReader';
-import { DeserializationError, SerializationError, SigningError } from './errors';
+import {
+  DeserializationError,
+  SerializationError,
+  SigningError,
+  VerificationError,
+} from './errors';
 
 abstract class Deserializable {
   abstract serialize(): Buffer;
@@ -463,7 +468,7 @@ function verifySingleSig(
   initialSigHash: string,
   authType: AuthType
 ): string {
-  const { nextSigHash } = nextVerification(
+  const { pubKey, nextSigHash } = nextVerification(
     initialSigHash,
     authType,
     condition.fee,
@@ -472,7 +477,13 @@ function verifySingleSig(
     condition.signature
   );
 
-  // TODO: verify pub key
+  // address version arg doesn't matter for signer hash generation
+  const addrBytes = addressFromPublicKeys(0, condition.hashMode, 1, [pubKey]).hash160;
+
+  if (addrBytes !== condition.signer)
+    throw new VerificationError(
+      `Signer hash does not equal hash of public key(s): ${addrBytes} != ${condition.signer}`
+    );
 
   return nextSigHash;
 }
