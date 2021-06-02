@@ -458,8 +458,7 @@ function verify(condition: SpendingCondition, initialSigHash: string, authType: 
   if (isSingleSig(condition)) {
     return verifySingleSig(condition, initialSigHash, authType);
   } else {
-    // TODO: verify multisig
-    return '';
+    return verifyMultiSig(condition, initialSigHash, authType);
   }
 }
 
@@ -486,6 +485,66 @@ function verifySingleSig(
     );
 
   return nextSigHash;
+}
+
+function verifyMultiSig(
+  condition: MultiSigSpendingCondition,
+  initialSigHash: string,
+  authType: AuthType
+): string {
+  const publicKeys: StacksPublicKey[] = [];
+  let curSigHash = initialSigHash;
+  let haveUncompressed = false;
+  let numSigs = new Uint16Array(1);
+  numSigs[0] = 0;
+
+  for (const field of condition.fields) {
+    let foundPubKey: StacksPublicKey;
+
+    switch (field.contents.type) {
+      case StacksMessageType.PublicKey:
+        if (!isCompressed(field.contents)) haveUncompressed = true;
+        foundPubKey = field.contents;
+        break;
+      case StacksMessageType.MessageSignature:
+        if (field.pubKeyEncoding === PubKeyEncoding.Uncompressed) haveUncompressed = true;
+        const { pubKey, nextSigHash } = nextVerification(
+          curSigHash,
+          authType,
+          condition.fee,
+          condition.nonce,
+          field.pubKeyEncoding,
+          field.contents
+        );
+        curSigHash = nextSigHash;
+        foundPubKey = pubKey;
+
+        numSigs[0] += 1;
+        if (numSigs[0] === 65536) throw new VerificationError('Too many signatures');
+
+        break;
+    }
+    publicKeys.push(foundPubKey);
+  }
+
+  if (numSigs[0] !== condition.signaturesRequired)
+    throw new VerificationError('Incorrect number of signatures');
+
+  if (haveUncompressed && condition.hashMode === AddressHashMode.SerializeP2SH)
+    throw new VerificationError('Uncompressed keys are not allowed in this hash mode');
+
+  const addrBytes = addressFromPublicKeys(
+    0,
+    condition.hashMode,
+    condition.signaturesRequired,
+    publicKeys
+  ).hash160;
+  if (addrBytes !== condition.signer)
+    throw new VerificationError(
+      `Signer hash does not equal hash of public key(s): ${addrBytes} != ${condition.signer}`
+    );
+
+  return curSigHash;
 }
 
 export class Authorization extends Deserializable {
