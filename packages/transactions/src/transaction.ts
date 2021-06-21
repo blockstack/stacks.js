@@ -96,8 +96,9 @@ export class StacksTransaction {
     if (!tx.auth.spendingCondition) {
       throw new Error('Cannot set signature on transaction without spending condition');
     }
-    (tx.auth.spendingCondition as SingleSigSpendingCondition).signature =
-      createMessageSignature(parsedSig);
+    (tx.auth.spendingCondition as SingleSigSpendingCondition).signature = createMessageSignature(
+      parsedSig
+    );
     return tx;
   }
 

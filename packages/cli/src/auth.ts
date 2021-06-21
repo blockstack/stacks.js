@@ -413,7 +413,7 @@ export async function handleAuth(
       mnemonic,
       gaiaHubUrl,
       appManifest,
-      decodedAuthPayload as unknown as AuthRequestType,
+      (decodedAuthPayload as unknown) as AuthRequestType,
       identities
     );
 

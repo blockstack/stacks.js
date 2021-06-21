@@ -3,7 +3,9 @@ import { bufferCV, uintCV, hash160 } from '@stacks/transactions';
 
 import BN from 'bn.js';
 
-export function decodeFQN(fqdn: string): {
+export function decodeFQN(
+  fqdn: string
+): {
   name: string;
   namespace: string;
   subdomain?: string;

@@ -175,7 +175,9 @@ export function getCipherObjectWrapper(opts: {
  * @param payloadShell - The JSON stringified empty `CipherObject`
  * @ignore
  */
-export function getSignedCipherObjectWrapper(payloadShell: string): {
+export function getSignedCipherObjectWrapper(
+  payloadShell: string
+): {
   /** The stringified JSON string of an empty `SignedCipherObject`. */
   signedPayloadValuesLength: number;
   /** Total string length of all the `SignedCipherObject` values
@@ -230,8 +232,9 @@ export function eciesGetJsonStringLength(opts: {
     return payloadShell.length + payloadValuesLength + encodedCipherTextLength;
   } else {
     // Get the signed version of the JSON envelope
-    const { signedPayloadShell, signedPayloadValuesLength } =
-      getSignedCipherObjectWrapper(payloadShell);
+    const { signedPayloadShell, signedPayloadValuesLength } = getSignedCipherObjectWrapper(
+      payloadShell
+    );
     // Add length of the JSON envelope, ciphertext length, and length of the const values.
     return (
       signedPayloadShell.length +
