@@ -475,7 +475,7 @@ export function makeProfileJWT(profileData: Object, privateKey: string): string 
   const signedToken = blockstack.signProfileToken(profileData, privateKey);
   const wrappedToken = blockstack.wrapProfileToken(signedToken);
   const tokenRecords = [wrappedToken];
-  return JSONStringify((tokenRecords as unknown) as AnyJson);
+  return JSONStringify(tokenRecords as unknown as AnyJson);
 }
 
 export async function makeDIDConfiguration(

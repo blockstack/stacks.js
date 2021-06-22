@@ -204,7 +204,7 @@ export function getGlobalScope(): Window {
   // environment, and a polyfill was added to the Node.js `global` object scope without adding the
   // `window` global object as well.
   if (typeof global !== 'undefined') {
-    return (global as unknown) as Window;
+    return global as unknown as Window;
   }
   throw new Error(
     'Unexpected runtime environment - no supported global scope (`window`, `self`, `global`) available'
