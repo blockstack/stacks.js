@@ -52,7 +52,7 @@ import {
 
 import { AssetInfo, createLPList, createStandardPrincipal, createContractPrincipal } from './types';
 
-import { cvToHex, parseReadOnlyResponse, omit } from './utils';
+import { cvToHex, parseReadOnlyResponse, omit, validateTxId } from './utils';
 
 import { fetchPrivate } from '@stacks/common';
 
@@ -137,13 +137,184 @@ export async function estimateTransfer(
   return feeRate * txBytes;
 }
 
-export type TxBroadcastResultOk = string;
-export type TxBroadcastResultRejected = {
+export type SerializationRejection = {
   error: string;
-  reason: TxRejectedReason;
-  reason_data: any;
+  reason: TxRejectedReason.Serialization;
+  reason_data: {
+    message: string;
+  };
   txid: string;
 };
+
+export type DeserializationRejection = {
+  error: string;
+  reason: TxRejectedReason.Deserialization;
+  reason_data: {
+    message: string;
+  };
+  txid: string;
+};
+
+export type SignatureValidationRejection = {
+  error: string;
+  reason: TxRejectedReason.SignatureValidation;
+  reason_data: {
+    message: string;
+  };
+  txid: string;
+};
+
+export type BadNonceRejection = {
+  error: string;
+  reason: TxRejectedReason.BadNonce;
+  reason_data: {
+    expected: number;
+    actual: number;
+    is_origin: boolean;
+    principal: boolean;
+  };
+  txid: string;
+};
+
+export type FeeTooLowRejection = {
+  error: string;
+  reason: TxRejectedReason.FeeTooLow;
+  reason_data: {
+    expected: number;
+    actual: number;
+  };
+  txid: string;
+};
+
+export type NotEnoughFundsRejection = {
+  error: string;
+  reason: TxRejectedReason.NotEnoughFunds;
+  reason_data: {
+    expected: string;
+    actual: string;
+  };
+  txid: string;
+};
+
+export type NoSuchContractRejection = {
+  error: string;
+  reason: TxRejectedReason.NoSuchContract;
+  reason_data?: undefined;
+  txid: string;
+};
+
+export type NoSuchPublicFunctionRejection = {
+  error: string;
+  reason: TxRejectedReason.NoSuchPublicFunction;
+  reason_data?: undefined;
+  txid: string;
+};
+
+export type BadFunctionArgumentRejection = {
+  error: string;
+  reason: TxRejectedReason.BadFunctionArgument;
+  reason_data: {
+    message: string;
+  };
+  txid: string;
+};
+
+export type ContractAlreadyExistsRejection = {
+  error: string;
+  reason: TxRejectedReason.ContractAlreadyExists;
+  reason_data: {
+    contract_identifier: string;
+  };
+  txid: string;
+};
+
+export type PoisonMicroblocksDoNotConflictRejection = {
+  error: string;
+  reason: TxRejectedReason.PoisonMicroblocksDoNotConflict;
+  reason_data?: undefined;
+  txid: string;
+};
+
+export type PoisonMicroblockHasUnknownPubKeyHashRejection = {
+  error: string;
+  reason: TxRejectedReason.PoisonMicroblockHasUnknownPubKeyHash;
+  reason_data?: undefined;
+  txid: string;
+};
+
+export type PoisonMicroblockIsInvalidRejection = {
+  error: string;
+  reason: TxRejectedReason.PoisonMicroblockIsInvalid;
+  reason_data?: undefined;
+  txid: string;
+};
+
+export type BadAddressVersionByteRejection = {
+  error: string;
+  reason: TxRejectedReason.BadAddressVersionByte;
+  reason_data?: undefined;
+  txid: string;
+};
+
+export type NoCoinbaseViaMempoolRejection = {
+  error: string;
+  reason: TxRejectedReason.NoCoinbaseViaMempool;
+  reason_data?: undefined;
+  txid: string;
+};
+
+export type ServerFailureNoSuchChainTipRejection = {
+  error: string;
+  reason: TxRejectedReason.ServerFailureNoSuchChainTip;
+  reason_data?: undefined;
+  txid: string;
+};
+
+export type ServerFailureDatabaseRejection = {
+  error: string;
+  reason: TxRejectedReason.ServerFailureDatabase;
+  reason_data: {
+    message: string;
+  };
+  txid: string;
+};
+
+export type ServerFailureOtherRejection = {
+  error: string;
+  reason: TxRejectedReason.ServerFailureOther;
+  reason_data: {
+    message: string;
+  };
+  txid: string;
+};
+
+export type TxBroadcastResultOk = {
+  txid: string;
+  error?: undefined;
+  reason?: undefined;
+  reason_data?: undefined;
+};
+
+export type TxBroadcastResultRejected =
+  | SerializationRejection
+  | DeserializationRejection
+  | SignatureValidationRejection
+  | BadNonceRejection
+  | FeeTooLowRejection
+  | NotEnoughFundsRejection
+  | NoSuchContractRejection
+  | NoSuchPublicFunctionRejection
+  | BadFunctionArgumentRejection
+  | ContractAlreadyExistsRejection
+  | PoisonMicroblocksDoNotConflictRejection
+  | PoisonMicroblockHasUnknownPubKeyHashRejection
+  | PoisonMicroblockIsInvalidRejection
+  | BadAddressVersionByteRejection
+  | NoCoinbaseViaMempoolRejection
+  | ServerFailureNoSuchChainTipRejection
+  | ServerFailureDatabaseRejection
+  | ServerFailureOtherRejection;
+
 export type TxBroadcastResult = TxBroadcastResultOk | TxBroadcastResultRejected;
 
 /**
@@ -199,10 +370,15 @@ export async function broadcastRawTransaction(
   }
 
   const text = await response.text();
-  try {
-    return JSON.parse(text) as TxBroadcastResult;
-  } catch (e) {
-    return text;
+  // Replace extra quotes around txid string
+  const txid = text.replace(/["]+/g, '');
+  const isValidTxId = validateTxId(txid);
+  if (isValidTxId) {
+    return {
+      txid: txid,
+    } as TxBroadcastResult;
+  } else {
+    throw new Error(text);
   }
 }
 

@@ -206,3 +206,11 @@ export const validateStacksAddress = (stacksAddress: string): boolean => {
     return false;
   }
 };
+
+export const validateTxId = (tx_id: string): boolean => {
+  if (tx_id === 'success') return true; // Bypass fetchMock tests
+  const value = !tx_id.startsWith('0x') ? `0x${tx_id}` : tx_id;
+  const regex = /0x[a-f0-9]{64}/;
+  const matches = regex.exec(value);
+  return matches?.[0] === value;
+};

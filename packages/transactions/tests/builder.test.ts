@@ -955,7 +955,7 @@ test('Transaction broadcast success', async () => {
   expect(fetchMock.mock.calls.length).toEqual(1);
   expect(fetchMock.mock.calls[0][0]).toEqual(network.getBroadcastApiUrl());
   expect(fetchMock.mock.calls[0][1]?.body).toEqual(transaction.serialize());
-  expect(response as TxBroadcastResultOk).toEqual('success');
+  expect(response as TxBroadcastResultOk).toEqual({ txid: 'success'});
 });
 
 test('Transaction broadcast with attachment', async () => {
@@ -989,7 +989,7 @@ test('Transaction broadcast with attachment', async () => {
     tx: transaction.serialize().toString('hex'),
     attachment: attachment.toString('hex')
   }));
-  expect(response as TxBroadcastResultOk).toEqual('success');
+  expect(response as TxBroadcastResultOk).toEqual({ txid: 'success'});
 });
 
 test('Transaction broadcast returns error', async () => {

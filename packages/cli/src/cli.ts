@@ -1648,8 +1648,8 @@ async function stack(network: CLINetworkAdapter, args: string[]): Promise<string
         return response;
       }
       return {
-        txid: `0x${response}`,
-        transaction: generateExplorerTxPageUrl(response as string, txNetwork),
+        txid: `0x${response.txid}`,
+        transaction: generateExplorerTxPageUrl(response.txid, txNetwork),
       };
     })
     .catch(error => {
