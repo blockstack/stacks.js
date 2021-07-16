@@ -585,7 +585,7 @@ async function sendTokens(network: CLINetworkAdapter, args: string[]): Promise<s
     return Promise.resolve(tx.serialize().toString('hex'));
   }
 
-  return broadcastTransaction(tx, txNetwork)
+  return broadcastTransaction(tx)
     .then((response: TxBroadcastResult) => {
       if (response.hasOwnProperty('error')) {
         return response;
@@ -645,7 +645,7 @@ async function contractDeploy(network: CLINetworkAdapter, args: string[]): Promi
     return Promise.resolve(tx.serialize().toString('hex'));
   }
 
-  return broadcastTransaction(tx, txNetwork)
+  return broadcastTransaction(tx)
     .then(response => {
       if (response.hasOwnProperty('error')) {
         return response;
@@ -731,7 +731,7 @@ async function contractFunctionCall(network: CLINetworkAdapter, args: string[]):
         return Promise.resolve(tx.serialize().toString('hex'));
       }
 
-      return broadcastTransaction(tx, txNetwork)
+      return broadcastTransaction(tx)
         .then(response => {
           if (response.hasOwnProperty('error')) {
             return response;

@@ -939,6 +939,7 @@ test('Transaction broadcast success', async () => {
   const network = new StacksMainnet();
 
   const transaction = await makeSTXTokenTransfer({
+    network,
     recipient,
     amount,
     senderKey,
@@ -950,7 +951,7 @@ test('Transaction broadcast success', async () => {
 
   fetchMock.mockOnce('success');
 
-  const response: TxBroadcastResult = await broadcastTransaction(transaction, network);
+  const response: TxBroadcastResult = await broadcastTransaction(transaction);
 
   expect(fetchMock.mock.calls.length).toEqual(1);
   expect(fetchMock.mock.calls[0][0]).toEqual(network.getBroadcastApiUrl());
@@ -970,6 +971,7 @@ test('Transaction broadcast with attachment', async () => {
   const network = new StacksMainnet();
 
   const transaction = await makeSTXTokenTransfer({
+    network,
     recipient,
     amount,
     senderKey,
@@ -981,7 +983,7 @@ test('Transaction broadcast with attachment', async () => {
 
   fetchMock.mockOnce('success');
 
-  const response: TxBroadcastResult = await broadcastTransaction(transaction, network, attachment);
+  const response: TxBroadcastResult = await broadcastTransaction(transaction, attachment);
 
   expect(fetchMock.mock.calls.length).toEqual(1);
   expect(fetchMock.mock.calls[0][0]).toEqual(network.getBroadcastApiUrl());
@@ -1003,6 +1005,7 @@ test('Transaction broadcast returns error', async () => {
   const network = new StacksMainnet();
 
   const transaction = await makeSTXTokenTransfer({
+    network,
     recipient,
     amount,
     senderKey,
@@ -1026,7 +1029,7 @@ test('Transaction broadcast returns error', async () => {
 
   fetchMock.mockOnce(JSON.stringify(rejection), { status: 400 });
 
-  const result = await broadcastTransaction(transaction, network);
+  const result = await broadcastTransaction(transaction);
   expect((result as TxBroadcastResultRejected).reason).toEqual(TxRejectedReason.BadNonce);
   expect((result as TxBroadcastResultRejected).reason_data).toEqual(rejection.reason_data);
 });
@@ -1042,6 +1045,7 @@ test('Transaction broadcast fails', async () => {
   const network = new StacksMainnet();
 
   const transaction = await makeSTXTokenTransfer({
+    network,
     recipient,
     amount,
     senderKey,
@@ -1053,7 +1057,7 @@ test('Transaction broadcast fails', async () => {
 
   fetchMock.mockOnce('test', { status: 400 });
 
-  await expect(broadcastTransaction(transaction, network)).rejects.toThrow();
+  await expect(broadcastTransaction(transaction)).rejects.toThrow();
 });
 
 test('Make contract-call with network ABI validation', async () => {

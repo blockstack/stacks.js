@@ -1,4 +1,5 @@
 import { StacksTransaction, deserializeTransaction } from '../src/transaction';
+import { StacksTestnet } from '@stacks/network';
 
 import {
   StandardAuthorization,
@@ -76,6 +77,7 @@ test('STX token transfer transaction serialization and deserialization', () => {
 
   const postConditions = createLPList([postCondition]);
   const transaction = new StacksTransaction(
+    new StacksTestnet(),
     transactionVersion,
     authorization,
     payload,
@@ -152,6 +154,7 @@ test('STX token transfer transaction fee setting', () => {
   const postConditions = createLPList([postCondition]);
 
   const transaction = new StacksTransaction(
+    new StacksTestnet(),
     transactionVersion,
     authorization,
     payload,
@@ -238,7 +241,7 @@ test('STX token transfer transaction multi-sig serialization and deserialization
 
   const payload = createTokenTransferPayload(recipientCV, amount, memo);
 
-  const transaction = new StacksTransaction(transactionVersion, originAuth, payload);
+  const transaction = new StacksTransaction(new StacksTestnet(), transactionVersion, originAuth, payload);
 
   const signer = new TransactionSigner(transaction);
   signer.signOrigin(privKeys[0]);
@@ -306,7 +309,7 @@ test('STX token transfer transaction multi-sig uncompressed keys serialization a
 
   const payload = createTokenTransferPayload(recipientCV, amount, memo);
 
-  const transaction = new StacksTransaction(transactionVersion, originAuth, payload);
+  const transaction = new StacksTransaction(new StacksTestnet(), transactionVersion, originAuth, payload);
 
   const signer = new TransactionSigner(transaction);
   signer.signOrigin(privKeys[0]);
@@ -381,7 +384,7 @@ test('Sponsored STX token transfer transaction serialization and deserialization
   const authType = AuthType.Sponsored;
   const authorization = new SponsoredAuthorization(spendingCondition, sponsorSpendingCondition);
 
-  const transaction = new StacksTransaction(transactionVersion, authorization, payload);
+  const transaction = new StacksTransaction(new StacksTestnet(), transactionVersion, authorization, payload);
 
   const signer = new TransactionSigner(transaction);
   signer.signOrigin(createStacksPrivateKey(secretKey));

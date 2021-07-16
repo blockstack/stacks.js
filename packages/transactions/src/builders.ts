@@ -156,11 +156,10 @@ export type TxBroadcastResult = TxBroadcastResultOk | TxBroadcastResultRejected;
  */
 export async function broadcastTransaction(
   transaction: StacksTransaction,
-  network: StacksNetwork,
   attachment?: Buffer
 ): Promise<TxBroadcastResult> {
   const rawTx = transaction.serialize();
-  const url = network.getBroadcastApiUrl();
+  const url = transaction.network.getBroadcastApiUrl();
 
   return broadcastRawTransaction(rawTx, url, attachment);
 }
@@ -355,6 +354,7 @@ export async function makeUnsignedSTXTokenTransfer(
 
   const lpPostConditions = createLPList(postConditions);
   const transaction = new StacksTransaction(
+    options.network,
     options.network.version,
     authorization,
     payload,
@@ -555,6 +555,7 @@ export async function makeContractDeploy(
 
   const lpPostConditions = createLPList(postConditions);
   const transaction = new StacksTransaction(
+    options.network,
     options.network.version,
     authorization,
     payload,
@@ -768,6 +769,7 @@ export async function makeUnsignedContractCall(
 
   const lpPostConditions = createLPList(postConditions);
   const transaction = new StacksTransaction(
+    options.network,
     options.network.version,
     authorization,
     payload,
